@@ -28,6 +28,7 @@ CREATE TABLE segnalazioni
   id serial NOT NULL,
   data_time timestamp without time zone,
   map integer,
+  distance integer,
   CONSTRAINT id_pk PRIMARY KEY (id)
 )
 
@@ -55,3 +56,16 @@ CREATE OR REPLACE VIEW topobot_v AS
    FROM segnalazioni se
      JOIN mappe mp ON mp.id_map = se.map AND mp.enabled = true
      JOIN utenti ut ON se.iduser = ut.user_id;
+	 
+CREATE OR REPLACE VIEW topobot_buffer_v AS 
+  SELECT (('Richiesta n. '::text || se.bot_request_message) || ' - '::text) || ut.username AS name,
+     se.bot_request_message,
+     se.data_time,
+     ut.first_name,
+     ut.username,
+     se.text_msg,
+     se.distance,
+     st_buffer(st_makepoint(se.lng, se.lat)::geography, se.distance::double precision) AS geom
+    FROM segnalazioni se
+      JOIN mappe mp ON mp.id_map = se.map AND mp.enabled = true
+      JOIN utenti ut ON se.iduser = ut.user_id;

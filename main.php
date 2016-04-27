@@ -123,7 +123,7 @@ Mappa ricerche: ".URL_UMAP
 			    $response=$telegram->getData();
 			    $text =$response["message"]["text"];
 			    
-			    if (is_numeric($text)) {
+			    if (is_numeric($text) && is_int(intval($text)) && intval($text) > 1 && intval($text) < MAX_RADIUS+1) {
 			    
 				    $sql = "UPDATE ". DB_TABLE_USER ." SET distance=".$text." WHERE user_id ='".$chat_id."'";
 				    
@@ -142,7 +142,7 @@ Mappa ricerche: ".URL_UMAP
 			    }
 			    else {
 			    	
-			    	$reply = "La distanza deve essere numerica.";
+			    	$reply = "La distanza deve essere maggiore di 1 e minore di ".MAX_RADIUS;
 			    
 			    }
 				   
@@ -294,7 +294,7 @@ Mappa ricerche: ".URL_UMAP
 				
 				$text = str_replace('\'', '', str_replace('/\n', '<br/>', $reply));
 								
-				$sql = "INSERT INTO ". DB_TABLE_GEO. "(lat,lng, iduser,text_msg,bot_request_message,data_time,file_id,file_path,file_type,geom,state,map) VALUES (".$lat.",".$lng.",'".$user_id."','".$text."','".$id."','".$timec."',' ',' ',' ',ST_GeomFromText('POINT(".$lng." ".$lat.")', 4326),0, ".$id_map.")";
+				$sql = "INSERT INTO ". DB_TABLE_GEO. "(lat,lng, iduser,text_msg,bot_request_message,data_time,file_id,file_path,file_type,geom,state,map,distance) VALUES (".$lat.",".$lng.",'".$user_id."','".$text."','".$id."','".$timec."',' ',' ',' ',ST_GeomFromText('POINT(".$lng." ".$lat.")', 4326),0, ".$id_map.", ".$rec_user[7].")";
 				
 				file_put_contents(LOG_FILE, $sql."\n", FILE_APPEND | LOCK_EX);
 				$ret = pg_query($db, $sql);

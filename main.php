@@ -94,7 +94,7 @@ Tutte le info sono sui server Telegram, mentre in un database locale c'è tracci
 			// aiuto per gli utenti
 			elseif ($text == "/help" || $text == "help") {
 					 
-					 $reply = ("inue bot e' un servizio per cercare i toponimi nel territorio sardo sfruttando gli opendata messi a disposizione dalla Regione Sardegna.
+					 $reply = ("inue BOT e' un servizio per cercare i toponimi nel territorio sardo grazie al riuso degli opendata messi a disposizione dalla Regione Sardegna, realizzato dalla startup Nordai con GeoNue (www.geonue.com)
 
 Per conoscere un toponimo, clicca [Invia posizione] dall'icona a forma di graffetta e aspetta una decina di secondi.
 

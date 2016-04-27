@@ -395,10 +395,17 @@ Mappa ricerche: ".URL_UMAP
 			$db = $this->getdb();
 			
 			$response=$telegram->getData();
-				
-			$username=$response["message"]["from"]["username"];
-			$first_name=$response["message"]["from"]["first_name"];
-			$last_name=$response["message"]["from"]["last_name"];
+			
+			if ($id_user == ID_ADMIN) {
+				$username= USER_ADMIN;
+				$first_name="";
+				$last_name="";
+			}
+			else {				
+				$username=$response["message"]["from"]["username"];
+				$first_name=$response["message"]["from"]["first_name"];
+				$last_name=$response["message"]["from"]["last_name"];
+			}
 			
 			if (!$this->check_user($id_user)) {
 				

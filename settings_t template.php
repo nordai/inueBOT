@@ -34,4 +34,10 @@ define('URL_UMAP',"");
 define('URL_UMAP_ORI',"");
 define('UMAP_ZOOM',"");
 
+define('MAX_RADIUS',1000);
+
+define('ID_ADMIN',"");
+define('USER_ADMIN',"");
+
+
 ?>

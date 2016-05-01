@@ -5,4 +5,5 @@ Per inviare una richiesta, clicca [Invia posizione] dall'icona a forma di graffe
 OPZIONI AVANZATE
 
 /help - guida
+/stat - le tue statistiche
 /setdistance - imposta il raggio di ricerca in metri

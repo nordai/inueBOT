@@ -175,9 +175,8 @@ Mappa ricerche: ".URL_UMAP
 				$i = 0;
 				$count = 0;
 				$top10 = "";
-			    while($res = pg_fetch_row($ret)){
-			    	if ($i++ < 10)			    	
-			    		$top10 .= $res[1]." (".$res[0].")\n";
+			    while($res = pg_fetch_row($ret)){	    	
+			    	$top10 .= $res[1]." (".$res[0].")\n";
 			    	$count = $res[0] + $count;
 			    }	
 				

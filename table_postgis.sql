@@ -29,6 +29,8 @@ CREATE TABLE segnalazioni
   data_time timestamp without time zone,
   map integer,
   distance integer,
+  istat text,
+  municipality text,
   CONSTRAINT id_pk PRIMARY KEY (id)
 )
 

@@ -99,6 +99,7 @@ Tutte le info sono sui server Telegram, mentre in un database locale c'è tracci
 Per conoscere un toponimo, clicca [Invia posizione] dall'icona a forma di graffetta e aspetta una decina di secondi.
 
 Per impostare il raggio di ricerca: /setdistance
+Le tue statistiche: /stat
 Mappa ricerche: ".URL_UMAP	
 	          );
 					 $content = array('chat_id' => $chat_id, 'text' => $reply,'disable_web_page_preview'=>true);
@@ -151,6 +152,44 @@ Mappa ricerche: ".URL_UMAP
 			
 				
 			}
+			// statistiche utente
+			elseif ($text == "/stat") {
+				
+				$db = $this->getdb();
+	  				
+	  			if ($this->check_admin($user_id)) {
+	  				$sql = "SELECT count(*) as num, municipality FROM ". DB_TABLE_GEO ." GROUP BY municipality ORDER BY num DESC, municipality ASC";
+	  				$reply = "Sono state fatte ";
+	  			}
+	  			else {
+	  				$sql = "SELECT count(*) as num, municipality FROM ". DB_TABLE_GEO ." WHERE iduser = '".$user_id."' GROUP BY municipality ORDER BY num DESC, municipality ASC";
+	  				$reply = "Hai fatto ";
+	  			}
+	  				
+	  			$ret = pg_query($db, $sql);
+				if(!$ret){
+					echo pg_last_error($db);
+					exit;
+				} 
+				
+				$i = 0;
+				$count = 0;
+				$top10 = "";
+			    while($res = pg_fetch_row($ret)){
+			    	if ($i++ < 10)			    	
+			    		$top10 .= $res[1]." (".$res[0].")\n";
+			    	$count = $res[0] + $count;
+			    }	
+				
+				$reply .= $count." ricerche sui comuni:\n";
+				if (pg_num_rows($ret)) {
+					$reply .= $top10;
+				}
+				
+				$content = array('chat_id' => $chat_id, 'text' => $reply);
+				$telegram->sendMessage($content);
+					 
+			}
 			//comando errato
 			else{
 				 $reply = "Hai selezionato un comando non previsto";
@@ -183,6 +222,8 @@ Mappa ricerche: ".URL_UMAP
 				$lng=$location["longitude"];
 				$lat=$location["latitude"];
 				$map = "";
+				$istat = "";
+				$municipality = "";
 				
 				//rispondo
 				$response=$telegram->getData();
@@ -208,7 +249,7 @@ Mappa ricerche: ".URL_UMAP
 					} 
 									   
 					if (pg_num_rows($ret)) {
-						$reply = "\nSei nel comune di ";
+						$reply = "Sei nel comune di ";
 						$row = array();
 									
 					    while($res = pg_fetch_row($ret)){
@@ -228,19 +269,21 @@ Mappa ricerche: ".URL_UMAP
 						exit;
 					}
 					
-					$sql = "SELECT subregion FROM ". DB_TABLE_TOPO_SUBREGION ." WHERE ST_DWithin(ST_Transform(ST_PointFromText('POINT(".$lng." ".$lat.")',4326),900913), geom, 20);";
+					$sql = "SELECT subregion,code,name FROM ". DB_TABLE_TOPO_SUBREGION ." WHERE ST_DWithin(ST_Transform(ST_PointFromText('POINT(".$lng." ".$lat.")',4326),900913), geom, 20);";
 					$ret = pg_query($db, $sql);
 					if(!$ret){
 						echo pg_last_error($db);
 						exit;
 					} 
-									   
+						   
 					if (pg_num_rows($ret)) {
 						$reply .= "Regione storica: ";
 						$row = array();
 									
 					    while($res = pg_fetch_row($ret)){
 					    	$reply .= $res[0]."\n";
+					    	$istat = $res[1];
+					    	$municipality = $res[2]; 
 					    	//$reply .= "fonte: ".$res[2]."\n\n";
 					   	}	
 		
@@ -292,9 +335,10 @@ Mappa ricerche: ".URL_UMAP
 				//CHECK mappa utente
 				$id_map = $this->check_setmap($telegram,$user_id);
 				
-				$text = str_replace('\'', '', str_replace('/\n', '<br/>', $reply));
+				$text = str_replace('\'', ' ', str_replace('/\n', '<br/>', $reply));
+				$mun = str_replace('\'', ' ', $municipality);
 								
-				$sql = "INSERT INTO ". DB_TABLE_GEO. "(lat,lng, iduser,text_msg,bot_request_message,data_time,file_id,file_path,file_type,geom,state,map,distance) VALUES (".$lat.",".$lng.",'".$user_id."','".$text."','".$id."','".$timec."',' ',' ',' ',ST_GeomFromText('POINT(".$lng." ".$lat.")', 4326),0, ".$id_map.", ".$rec_user[7].")";
+				$sql = "INSERT INTO ". DB_TABLE_GEO. "(lat,lng, iduser,text_msg,bot_request_message,data_time,file_id,file_path,file_type,geom,state,map,distance,istat,municipality) VALUES (".$lat.",".$lng.",'".$user_id."','".$text."','".$id."','".$timec."',' ',' ',' ',ST_GeomFromText('POINT(".$lng." ".$lat.")', 4326),0, ".$id_map.", ".$rec_user[7].",'".$istat."','".$mun."')";
 				
 				file_put_contents(LOG_FILE, $sql."\n", FILE_APPEND | LOCK_EX);
 				$ret = pg_query($db, $sql);

@@ -156,10 +156,24 @@ Mappa ricerche: ".URL_UMAP
 			elseif ($text == "/stat") {
 				
 				$db = $this->getdb();
+				
+				if ($this->check_admin($user_id)) {
+	  				$sql = "SELECT * FROM ". DB_TABLE_USER;
+	  				
+	  				$ret = pg_query($db, $sql);
+					if(!$ret){
+						echo pg_last_error($db);
+						exit;
+					} 
+					
+					$reply = "Numero utenti: ".pg_num_rows($ret)."\n\n";
+					
+	  			}
+	  			
 	  				
 	  			if ($this->check_admin($user_id)) {
 	  				$sql = "SELECT count(*) as num, municipality FROM ". DB_TABLE_GEO ." GROUP BY municipality ORDER BY num DESC, municipality ASC";
-	  				$reply = "Sono state fatte ";
+	  				$reply .= "Sono state fatte ";
 	  			}
 	  			else {
 	  				$sql = "SELECT count(*) as num, municipality FROM ". DB_TABLE_GEO ." WHERE iduser = '".$user_id."' GROUP BY municipality ORDER BY num DESC, municipality ASC";
@@ -175,13 +189,16 @@ Mappa ricerche: ".URL_UMAP
 				$i = 0;
 				$count = 0;
 				$top10 = "";
-			    while($res = pg_fetch_row($ret)){	    	
-			    	$top10 .= $res[1]." (".$res[0].")\n";
+			    while($res = pg_fetch_row($ret)){
+			    	if (($this->check_admin($user_id) && $i++ <= 10) || !$this->check_admin($user_id))
+			    		$top10 .= $res[1]." (".$res[0].")\n";
 			    	$count = $res[0] + $count;
 			    }	
 				
-				$reply .= $count." ricerche sui comuni:\n";
-				if (pg_num_rows($ret)) {
+				$num_mun = pg_num_rows($ret);
+				
+				$reply .= $count." ricerche su ".$num_mun." comuni:\n";
+				if ($num_mun) {
 					$reply .= $top10;
 				}
 				
@@ -316,7 +333,7 @@ Mappa ricerche: ".URL_UMAP
 					}
 					else {
 						
-							$reply .= "\nNon sono stati trovati toponimi nel punto specificato\n";
+							$reply .= "\nNon sono stati trovati toponimi nel punto specificato. Aumenta il raggio di ricerca con /setdistance.\n(*) I toponimi si trovano maggiormente nelle zone di campagna!\n";
 						 	
 					}
 				
